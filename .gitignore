@@ -1,0 +1,7 @@
+# This repository holds rules, not artefacts. If anything below ever appears here, something has gone
+# wrong with that sentence rather than with the ignore rules.
+__pycache__/
+*.py[cod]
+node_modules/
+.venv/
+*.log
