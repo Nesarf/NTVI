@@ -64,7 +64,7 @@
 |---|---|---|---|---|
 | `torikago` 1.20.4 | whl 133.2 KiB · tar.gz 229.6 KiB | Python 3.14.7 | `<venv>/share/torikago` | 1432x770 |
 | `nanodesu` 1.7.5 | whl 59.6 KiB · tar.gz 100.3 KiB | Python 3.14.7 | `<venv>/share/nanodesu` | 1432x770 |
-| `ichiwatashi` 0.1.0 | whl 116.1 KiB · tar.gz 191.7 KiB | Python 3.14.7 | `font --check`：88 字形，窗口用到的全套字符齐备 | — |
+| `ichiwatashi` 0.1.0 | whl 116.1 KiB · tar.gz 191.7 KiB | Python 3.14.7 | `panel --export` 后 `panel --verify`：3840 个像素全一致；`font --check`：88 字形，窗口用到的全套字符齐备 | — |
 
 - 测试：`torikago` **491 条**（20 条跳过）全过；`nanodesu` **210 条**全过。
 - 家族一致性：`ichiwatashi/tools/check_embeds.py` 报三处嵌入同一 panel（校验和 `974460bf932d728f`），
