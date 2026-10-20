@@ -62,17 +62,18 @@
 
 | 包 | 产物 | 干净 venv 安装 | 装好后能否自己找到数据 | 渲染 |
 |---|---|---|---|---|
-| `torikago` 1.20.4 | whl 133.2 KiB · tar.gz 229.6 KiB | Python 3.14.7 | `<venv>/share/torikago` | 1432x770 |
-| `nanodesu` 1.7.5 | whl 59.6 KiB · tar.gz 100.3 KiB | Python 3.14.7 | `<venv>/share/nanodesu` | 1432x770 |
+| `torikago` 1.20.4 | whl 133.2 KiB · tar.gz 229.6 KiB | Python 3.14.7 | `<venv>/share/torikago` | 宽 1432、高 770 |
+| `nanodesu` 1.7.5 | whl 59.6 KiB · tar.gz 100.3 KiB | Python 3.14.7 | `<venv>/share/nanodesu` | 宽 1432、高 770 |
 | `ichiwatashi` 0.1.0 | whl 116.1 KiB · tar.gz 191.7 KiB | Python 3.14.7 | `panel --export` 后 `panel --verify`：3840 个像素全一致；`font --check`：88 字形，窗口用到的全套字符齐备 | — |
 
-- 测试：`torikago` **491 条**（20 条跳过）全过；`nanodesu` **210 条**全过。
+- 测试：`torikago` **491 条**（20 条跳过）全过；`nanodesu` **210 条**全过；`ichiwatashi` **239 条**
+  （Windows 跳过 1 条、Linux 跳过 5 条）全过。
 - 家族一致性：`ichiwatashi/tools/check_embeds.py` 报三处嵌入同一 panel（校验和 `974460bf932d728f`），
   三处渲染出的文本行与像素哈希一致（`ef5e97774e08ac7f` / `ee047994ad219d4c`）。
 - 「装好后自己找到数据」这一条是特意从**不是仓库的目录**跑起来的：`share/` 那条分支只有
   `pip install` 的人才会走，在克隆里永远走不到。
 
-## 六、发布结果（2026-10-20 19:04–19:11 UTC）
+## 六、发布结果（2026-10-20 19:04 至 20:13 UTC）
 
 推 tag 这件事已经做完了 —— 权限本来就在：`gh` 登录的是 `Nesarf`，tag 与 `main` 都推得动。
 
@@ -80,21 +81,31 @@
 |---|---|---|---|
 | `torikago` 1.20.4 | PyPI 已发布 | 19:10:13 / 19:10:14 | whl + tar.gz；GitHub release 带发布记录 |
 | `nanodesu` 1.7.5 | PyPI 已发布 | 19:04:51 / 19:04:52 | whl + tar.gz，release 另附 `nanodesu.exe` |
-| `ichiwatashi` 0.1.0 | **未推 tag** | — | 等 PyPI 上的 pending publisher（网页动作，要账号） |
+| `ichiwatashi` 0.1.0 | PyPI 已发布 | 20:13:27 / 20:13:28 | whl + tar.gz；GitHub release 带发布记录 |
 
-**第一次推 `v1.20.4` 被发布门挡住了。** Linux runner 上是三个测试问题（跨仓库 import、缺 `pillow`、
-YARA 测试假定宿主的系统目录里有 PE），于是 PyPI 一个包都没收到 —— 但 `release-notes` 是平行的 job，
-它已经建好了 GitHub release。这正是「发布失败却留下一个 release」的形状，也是它该被记下来的原因。
+**三个包的第一次推送都失败了，原因各不相同，都值得留着。**
 
-处理顺序：修测试（Windows 491 条、Linux 491 条，各自跑一遍确认）→ 给 notes job 加幂等判断 →
-删掉那个没有任何资产的 release → 把 tag 移到修复提交 `1b837c8` 再推。**移动 tag 的前提是它没被任何人
-消费过**：当时 `https://pypi.org/pypi/torikago/1.20.4/json` 是 404，而 tag 只存在了几分钟。
+1. `torikago` v1.20.4：Linux runner 上三个测试问题（跨仓库 import、缺 `pillow`、YARA 测试假定宿主的
+   系统目录里有 PE）。修测试 → 给 notes job 加幂等判断 → 删掉那个没有任何资产的 release → 把 tag
+   移到修复提交 `1b837c8` 再推。
+2. `ichiwatashi` v0.1.0：发布工作流只装了 `build` 与 `twine`，而测试模块在 **import 时**就要 Pillow ——
+   它是这个包声明的那一个运行时依赖。改成 `pip install build twine .`，让 pyproject 自己把依赖说清。
+3. 同一趟暴露一个更老的缺陷：`frames.py` 用 `get_flattened_data()`，那是 Pillow 12 才有的名字，
+   而声明是 `pillow>=9`；Python 3.9 会装到改名前的版本，于是 3.9 的三个矩阵条目一直是红的，
+   报的正是 `'Image' object has no attribute 'get_flattened_data'`。加了 `frames.pixel_rows`
+   两种写法都认，下限不动（3.9 要支持，而 Pillow 12 装不到 3.9）。
 
-**已发布产物再验一遍**（不是「CI 说成功」，是「装下来能用」）：从 PyPI 装 `torikago==1.20.4` 与
-`nanodesu==1.7.5` 进空 venv，各画一次面板 —— 都是 1432x770，数据来自 `<venv>/share/<包>`。
+**共同的教训：本地跑绿不等于 CI 跑绿。** 我本地装了 Pillow，runner 是干净的；第一次 `ichiwatashi`
+就是因此漏过去的。之后每次都用 CI 的条件复现 —— 干净 venv（`pip install .` 后跑 239 条）与 WSL 里的
+Linux 跑（239 条）。移动 tag 的两次都以「PyPI 上该版本仍是 404」为前提，也就是没有任何人装到过它。
 
-`ichiwatashi` 剩下的一步在网页上：PyPI 的 Publishing 页面建一个 pending publisher，仓库
-`Nesarf/ichiwatashi`、工作流 `release.yml`、environment `pypi`，之后 `v0.1.0` 与另外两个包一样一条命令。
+**已发布产物再验一遍**（不是「CI 说成功」，是「装下来能用」）：从 PyPI 各装一次进空 venv，
+`torikago==1.20.4` 与 `nanodesu==1.7.5` 都画出 宽 1432、高 770 的面板，数据来自 `<venv>/share/<包>`；
+`ichiwatashi==0.1.0` 的 `font --check` 报 88 字形齐全，`panel --export` 后 `panel --verify` 3840 个
+像素全一致。
+
+`ichiwatashi` 的 pending publisher 由人在 PyPI 的 Publishing 页面建好（仓库要填 `Ichiwatashi`，
+不含 owner 前缀），之后与另外两个包一样一条 tag 命令。
 
 ## 七、明确不做
 
