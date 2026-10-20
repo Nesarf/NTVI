@@ -72,16 +72,29 @@
 - 「装好后自己找到数据」这一条是特意从**不是仓库的目录**跑起来的：`share/` 那条分支只有
   `pip install` 的人才会走，在克隆里永远走不到。
 
-## 六、发布这一步要做什么（人来做）
+## 六、发布结果（2026-10-20 19:04–19:11 UTC）
 
-`torikago` 与 `nanodesu` 用 Trusted Publishing：推 tag 就触发，仓库里没有任何 token。
+推 tag 这件事已经做完了 —— 权限本来就在：`gh` 登录的是 `Nesarf`，tag 与 `main` 都推得动。
 
-1. `torikago`：`git tag v1.20.4 && git push origin v1.20.4`
-2. `nanodesu`：`git tag v1.7.5 && git push origin v1.7.5` —— 这一条同时产出 PyPI 包与带 `--window`
-   的独立 exe，exe 的窗口数据由 `--add-data` 带进包内，并由 CI 断言
-3. `ichiwatashi`：先在 PyPI 建一个 pending publisher（仓库 `Nesarf/ichiwatashi`、工作流
-   `release.yml`、environment `pypi`），再 `git tag v0.1.0 && git push origin v0.1.0`
-4. 三条共同的前提：工作树干净、`git status` 与远端同步、测试在推 tag 前刚跑过
+| 包 | 结果 | 上传时间（UTC） | 产物 |
+|---|---|---|---|
+| `torikago` 1.20.4 | PyPI 已发布 | 19:10:13 / 19:10:14 | whl + tar.gz；GitHub release 带发布记录 |
+| `nanodesu` 1.7.5 | PyPI 已发布 | 19:04:51 / 19:04:52 | whl + tar.gz，release 另附 `nanodesu.exe` |
+| `ichiwatashi` 0.1.0 | **未推 tag** | — | 等 PyPI 上的 pending publisher（网页动作，要账号） |
+
+**第一次推 `v1.20.4` 被发布门挡住了。** Linux runner 上是三个测试问题（跨仓库 import、缺 `pillow`、
+YARA 测试假定宿主的系统目录里有 PE），于是 PyPI 一个包都没收到 —— 但 `release-notes` 是平行的 job，
+它已经建好了 GitHub release。这正是「发布失败却留下一个 release」的形状，也是它该被记下来的原因。
+
+处理顺序：修测试（Windows 491 条、Linux 491 条，各自跑一遍确认）→ 给 notes job 加幂等判断 →
+删掉那个没有任何资产的 release → 把 tag 移到修复提交 `1b837c8` 再推。**移动 tag 的前提是它没被任何人
+消费过**：当时 `https://pypi.org/pypi/torikago/1.20.4/json` 是 404，而 tag 只存在了几分钟。
+
+**已发布产物再验一遍**（不是「CI 说成功」，是「装下来能用」）：从 PyPI 装 `torikago==1.20.4` 与
+`nanodesu==1.7.5` 进空 venv，各画一次面板 —— 都是 1432x770，数据来自 `<venv>/share/<包>`。
+
+`ichiwatashi` 剩下的一步在网页上：PyPI 的 Publishing 页面建一个 pending publisher，仓库
+`Nesarf/ichiwatashi`、工作流 `release.yml`、environment `pypi`，之后 `v0.1.0` 与另外两个包一样一条命令。
 
 ## 七、明确不做
 

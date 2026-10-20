@@ -110,8 +110,12 @@
     两个发布工作流的 wheel 检查从「打印」变成「断言」，`nanodesu` 补上发布前的测试门。
   - 三包产物都搭好了并在干净 venv 里验过：装好之后自己从 `<venv>/share/<包>` 找到面板并渲出
     1432x770；`torikago` 491 条测试、`nanodesu` 210 条全过；三处嵌入的校验和与渲染哈希一致。
-- **推 tag 这一步由人做**（工具不发自己的包）：`v1.20.4`、`v1.7.5`、`v0.1.0`；
-  `ichiwatashi` 还要先在 PyPI 建 pending publisher。命令与前提见 `RELEASE_CHECKLIST.md` §六。
+- **两个包已经发布了，第三个卡在一个网页动作上。** `torikago` 1.20.4 与 `nanodesu` 1.7.5 都上了 PyPI
+  （19:10 与 19:04 UTC），`nanodesu` 的 release 还带上了含窗口数据的 `nanodesu.exe`。
+  第一次推 `v1.20.4` 被发布门挡住（Linux runner 上三个测试问题），修完把 tag 移到修复提交重推 ——
+  移动的前提是当时 PyPI 上 1.20.4 还是 404，没有任何人消费过它。`ichiwatashi` 0.1.0 等 PyPI 的
+  pending publisher（仓库 `Nesarf/ichiwatashi`、工作流 `release.yml`、environment `pypi`），
+  建好之后与另外两个包一样是一条 tag 命令。细节见 `RELEASE_CHECKLIST.md` §六。
 
 ## 四、明确不做
 
