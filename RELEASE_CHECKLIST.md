@@ -73,7 +73,7 @@
 - 「装好后自己找到数据」这一条是特意从**不是仓库的目录**跑起来的：`share/` 那条分支只有
   `pip install` 的人才会走，在克隆里永远走不到。
 
-## 六、发布结果（2026-10-20 19:04 至 20:13 UTC）
+## 六、发布结果（2026-10-20 19:04 至 20:42 UTC）
 
 推 tag 这件事已经做完了 —— 权限本来就在：`gh` 登录的是 `Nesarf`，tag 与 `main` 都推得动。
 
@@ -82,6 +82,7 @@
 | `torikago` 1.20.4 | PyPI 已发布 | 19:10:13 / 19:10:14 | whl + tar.gz；GitHub release 带发布记录 |
 | `nanodesu` 1.7.5 | PyPI 已发布 | 19:04:51 / 19:04:52 | whl + tar.gz，release 另附 `nanodesu.exe` |
 | `ichiwatashi` 0.1.0 | PyPI 已发布 | 20:13:27 / 20:13:28 | whl + tar.gz；GitHub release 带发布记录 |
+| `ichiwatashi` 0.1.1 | PyPI 已发布 | 20:42:02 / 20:42:03 | 补丁版：修 sdist 自身的两处不实 |
 
 **三个包的第一次推送都失败了，原因各不相同，都值得留着。**
 
@@ -111,6 +112,22 @@ Linux 跑（239 条）。移动 tag 的两次都以「PyPI 上该版本仍是 40
 
 `ichiwatashi` 的 pending publisher 由人在 PyPI 的 Publishing 页面建好（仓库要填 `Ichiwatashi`，
 不含 owner 前缀），之后与另外两个包一样一条 tag 命令。
+
+### 然后是 0.1.1：0.1.0 的 sdist 有两处不实
+
+0.1.0 发出去之后，把它的 sdist 解开来自己跑测试才看见：它声明 `requires-python >=3.9`，可里面的
+版本测试 import `tomllib`（3.11 才有）；而且 `test/` 目录只带了一个文件 —— 没有 `__init__.py`，
+`python -m unittest discover -s test -t .` 在那儿直接起不来，`data/` 里的那一份夹具也缺。
+**一个看起来像测试套件、却跑不起来的目录，与一个看起来装好了、却找不到自己字体的 wheel 是同一种形状。**
+
+0.1.1 加了 `MANIFEST.in` 把测试目录整份带上，版本改成用正则读一行，并顺手把两个工作流的
+动作钉到 commit SHA（另外两个仓库早就这么做，浮动 tag 是可以被重指的指针）。验证方式是
+**从 PyPI 下 sdist、解包、在里面跑**：239 条通过、2 条跳过（第二条是 `corpus/` 账本，
+那是仓库里的证据，故意不进 sdist，与兄弟工具同一取舍）。
+
+一条会重复咬人的小事：**pip 自己的 HTTP 缓存**。0.1.1 上传四分钟后 `pip index versions` 仍只报
+0.1.0，而 `https://pypi.org/simple/ichiwatashi/` 原文里已经有 0.1.1 了 —— 加 `--no-cache-dir`
+立刻装到。以后验证「刚发布的包装得到吗」时，先怀疑缓存，再怀疑索引。
 
 ## 七、明确不做
 

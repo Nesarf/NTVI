@@ -110,12 +110,13 @@
     两个发布工作流的 wheel 检查从「打印」变成「断言」，`nanodesu` 补上发布前的测试门。
   - 三包产物都搭好了并在干净 venv 里验过：装好之后自己从 `<venv>/share/<包>` 找到面板并渲出
     1432x770；`torikago` 491 条测试、`nanodesu` 210 条全过；三处嵌入的校验和与渲染哈希一致。
-- **三个包都发布完了。** `torikago` 1.20.4（19:10 UTC）、`nanodesu` 1.7.5（19:04 UTC，release 另附含
-  窗口数据的 `nanodesu.exe`）、`ichiwatashi` 0.1.0（20:13 UTC）。**三个的第一次推送都失败了**：
-  `torikago` 是 Linux runner 上三个测试问题，`ichiwatashi` 是发布工作流没装它自己声明的运行时依赖，
-  而同一趟还翻出一个更老的缺陷 —— `get_flattened_data()` 是 Pillow 12 才有的名字，声明却是
-  `pillow>=9`，3.9 矩阵一直红。两次移 tag 都以「PyPI 上该版本仍是 404」为前提。
-  **教训是本地跑绿不等于 CI 跑绿**：之后每次都用干净 venv 与 WSL 复现 CI 条件再推。
+- **三个包都发布完了，`ichiwatashi` 还补了一个 0.1.1。** `torikago` 1.20.4（19:10 UTC）、
+  `nanodesu` 1.7.5（19:04 UTC，release 另附含窗口数据的 `nanodesu.exe`）、`ichiwatashi` 0.1.0
+  （20:13 UTC），随后 0.1.1（20:42 UTC）修掉 0.1.0 的 sdist 里两处不实：声明的 3.9 支持与一个
+  `tomllib` 测试矛盾，测试目录又只带了一个文件、在里面根本跑不起来。
+  **三个包的第一次推送都失败了**：`torikago` 是 Linux runner 上三个测试问题，`ichiwatashi` 是
+  发布工作流没装它自己声明的运行时依赖。两次移 tag 都以「PyPI 上该版本仍是 404」为前提。
+  **教训是本地跑绿不等于 CI 跑绿**：之后每次都用干净 venv、WSL 与「解开 sdist 再跑」复现。
   细节见 `RELEASE_CHECKLIST.md` §六。
 
 ## 四、明确不做
