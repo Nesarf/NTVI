@@ -73,7 +73,7 @@
 - 「装好后自己找到数据」这一条是特意从**不是仓库的目录**跑起来的：`share/` 那条分支只有
   `pip install` 的人才会走，在克隆里永远走不到。
 
-## 六、发布结果（2026-10-20 19:04 至 20:42 UTC）
+## 六、发布结果（2026-10-20 19:04 至 2026-10-21 15:04 UTC）
 
 推 tag 这件事已经做完了 —— 权限本来就在：`gh` 登录的是 `Nesarf`，tag 与 `main` 都推得动。
 
@@ -83,6 +83,25 @@
 | `nanodesu` 1.7.5 | PyPI 已发布 | 19:04:51 / 19:04:52 | whl + tar.gz，release 另附 `nanodesu.exe` |
 | `ichiwatashi` 0.1.0 | PyPI 已发布 | 20:13:27 / 20:13:28 | whl + tar.gz；GitHub release 带发布记录 |
 | `ichiwatashi` 0.1.1 | PyPI 已发布 | 20:42:02 / 20:42:03 | 补丁版：修 sdist 自身的两处不实 |
+| `torikago` 1.20.5 | PyPI 已发布 | 10-21 15:03:44 / 15:03:46 | 补丁版：sdist 补齐测试要用的文件 |
+| `nanodesu` 1.7.6 | PyPI 已发布 | 10-21 15:03:54 / 15:03:57 | 同上 |
+
+### 后来补的两个：sdist 里带着跑不起来的测试
+
+`ichiwatashi` 0.1.0 的教训当时只修在它自己身上。第二天回头把**已发布的两份 sdist** 解到 `/tmp`
+（不是仓库）在 Linux 上各跑一次，另外两个包也是同样的形状：
+
+- `torikago` 1.20.4：391 条测试、7 个错误。缺 `_fixtures.py`（四个模块 import 就挂）、
+  `PERSONA.md`、`tools/pixelart.py`。
+- `nanodesu` 1.7.5：八个模块缺 `spawn_guard.py`，另有三条缺 `FORMAT_MATRIX.md` 与 `PERSONA.md` ——
+  其中一个正是 `test_voice_wiring`，它比对文档里的句子与代码里的句子，没有文档就没法守。
+
+原因在默认收录规则：`test/test_*.py` 会被收，`test/_fixtures.py` 不会；仓库根目录的文档与脚本
+不点名就不进 sdist。于是目录看着完整，一跑就散。
+
+补法是把测试需要的东西点全名（`MANIFEST.in`：整个 `test/`、`tools/`、`PERSONA.md`、
+`FORMAT_MATRIX.md`）。验证仍用同一把尺子 —— **把发布出去的 sdist 解到仓库外面再跑**：
+`torikago` 488 条通过（41 跳过）、`nanodesu` 210 条通过（1 跳过）。跳过的都是本机建不出的夹具。
 
 **三个包的第一次推送都失败了，原因各不相同，都值得留着。**
 

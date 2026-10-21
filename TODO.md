@@ -118,6 +118,12 @@
   发布工作流没装它自己声明的运行时依赖。两次移 tag 都以「PyPI 上该版本仍是 404」为前提。
   **教训是本地跑绿不等于 CI 跑绿**：之后每次都用干净 venv、WSL 与「解开 sdist 再跑」复现。
   细节见 `RELEASE_CHECKLIST.md` §六。
+- **sdist 自测这一条补到了另外两个包（2026-10-21）。** 把已发布的 `torikago` 1.20.4 与
+  `nanodesu` 1.7.5 的 sdist 解到 `/tmp`、在 Linux 上各跑一次，都不通过：前者缺 `_fixtures.py`、
+  `PERSONA.md`、`tools/pixelart.py`（391 条、7 个错误），后者缺 `spawn_guard.py`、
+  `FORMAT_MATRIX.md`、`PERSONA.md`。补法是把测试要用的东西在 `MANIFEST.in` 里点全名，
+  已发 `torikago` 1.20.5 与 `nanodesu` 1.7.6；验证仍是「解到仓库外面再跑」，488 与 210 条通过。
+  **行为没变，只改打包。**
 
 ## 四、明确不做
 
